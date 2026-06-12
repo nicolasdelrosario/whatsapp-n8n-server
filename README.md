@@ -1,269 +1,132 @@
-# WhatsApp n8n Server – Automate WhatsApp Messaging via REST API + n8n
+# WhatsApp n8n Server
 
-A Node.js server that integrates with WhatsApp Web via [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js), enabling automated message sending through a REST API. Built with Clean Architecture principles.
+WhatsApp n8n Server exposes a small REST API for sending, replying and broadcasting WhatsApp messages through [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). It follows a Clean Architecture style, keeps the HTTP layer thin, and ships with OpenAPI documentation plus a Scalar UI.
 
+## What it provides
 
-## ✨ Features
+- REST API with API key protection
+- QR code bootstrap flow for WhatsApp Web authentication
+- Send, reply and broadcast message use cases
+- Health check endpoint for deployments
+- OpenAPI 3.1 document and Scalar docs UI
+- Docker-based deployment for VPS environments
 
-- WhatsApp Web integration using [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js)
-- REST API endpoint for sending, replying and broadcasting messages
-- QR code authentication
-- Session persistence with `LocalAuth`
-- Clean Architecture
-- Ready to integrate with [`n8n`](https://n8n.io/) via HTTP requests
+## Project structure
 
-## ⚙️ Prerequisites
+The backend is organized by layer instead of by transport:
 
-- Node.js v18 or higher
-- Bun (recommended) or any Node.js-compatible package manager
-- A WhatsApp account
-- A smartphone with WhatsApp installed
+- `src/lib/Shared`: cross-cutting infrastructure, HTTP helpers, configuration, routes and docs
+- `src/lib/Whatsapp/domain`: domain models, value objects and exceptions
+- `src/lib/Whatsapp/application`: use cases
+- `src/lib/Whatsapp/infrastructure`: WhatsApp client adapter, services, controllers, routes and schemas
 
-> [!NOTE]
-> Bun is used for local development and scripts, but the server works with npm, pnpm, or yarn.
+The entry point is `src/app.ts`, which builds the Hono app, registers routes and starts the WhatsApp client.
 
-## 🚀 Installation
+## Requirements
 
-Clone the repository:
+- Node.js 20 or newer
+- Docker and Docker Compose for containerized deployment
+- A WhatsApp account on a phone with WhatsApp installed
+- A valid `x-api-key` for protected requests
 
-```bash
-git clone https://github.com/nicolasdelrosario/whatsapp-n8n-server.git
-cd whatsapp-n8n-server
-```
+## Local setup
 
-Install dependencies
+1. Install dependencies.
 
 ```bash
 bun install
 ```
 
-Configure environment variables:
+2. Create your environment file.
 
 ```bash
 cp .env.example .env
 ```
 
-Edit the `.env` and set:  
+3. Configure the values.
 
-```
-API_KEY=your-secure-api-key
+```env
+PORT=3000
+NODE_ENV=development
+API_KEY=your-api-key
 BROADCAST_DELAY_MS=1500
 ```
 
-- `API_KEY`: Secure key for API authentication.
-- `BROADCAST_DELAY_MS`: Delay in milliseconds between each broadcast message (default: `1500` ms).
-
-## 🧪 Usage
-
-Start development mode
+4. Start the server.
 
 ```bash
 bun dev
 ```
 
-- On first run, a QR code will appear in the terminal.
-- Scan it with WhatsApp on your phone to authenticate.
-- Once authenticated, your session will be saved.
+On the first run, the terminal prints a QR code. Scan it with WhatsApp to authorize the session. The browser session is persisted through `LocalAuth`.
 
-Server will run on:
+## API surface
 
-```bash
-http://localhost:3000
+Base URL:
+
+```text
+http://localhost:3000/api/v1
 ```
 
-## 📡 API
+Public endpoints:
 
-All requests require:
+- `GET /api/v1/health`
+- `GET /api/v1/openapi.json`
+- `GET /api/v1/docs`
 
-```bash
+Protected endpoints require:
+
+```http
 x-api-key: your-api-key
 ```
 
-If the API key is missing or invalid, you’ll get:
+Endpoints:
 
-```json
-{
-    "message": "Unauthorized"
-}
-```
+- `GET /api/v1/qr-code`
+- `POST /api/v1/send-message`
+- `POST /api/v1/reply-message`
+- `POST /api/v1/broadcast-message`
 
+## Example requests
 
-### Get QR Code
-
-```bash
-GET /api/v1/qr-code
-x-api-key: your-api-key
-```
-
-Gets the QR code needed for initial authentication with WhatsApp Web.
-
-Response – QR Available
-
-```json
-{
-    "message": "Scan this QR code with WhatsApp",
-    "status": "qr",
-    "qrCode": "QR_CODE_DATA"
-}
-```
-
-Response – Already Connected
-
-```json
-{
-    "message": "Whatsapp is already connected",
-    "status": "ready"
-}
-```
-
-Response – Not Available Yet
-
-```json
-{
-    "message": "QR code not available yet. Please try again.",
-    "status": "initializing"
-}
-```
-
-### Send Message
- ```bash
-POST /api/v1/send-message
-x-api-key: your-api-key
-Content-Type: application/json
-```
-
-Sends a WhatsApp message to a phone number.
-
-Request Body
-
-```json
-{
-    "chatId": "51123456789",
-    "message": "Hello from WhatsApp n8n Server"
-}
-```
-
-> [!NOTE]
-> Note: You only need to send the number in international format without the + or @c.us. The server automatically formats it.
-
-Response
-
-```json
-{
-    "status": "OK",
-    "message": "Message sent successfully",
-    "data": {
-        "chatId": "51123456789",
-        "message": "Hello from WhatsApp n8n Server"
-    }
-}
-```
-
-### Reply to a Message
+### Send a message
 
 ```bash
-POST /api/v1/reply-message
-x-api-key: your-api-key
-Content-Type: application/json
+curl -X POST http://localhost:3000/api/v1/send-message \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: your-api-key' \
+  -d '{"chatId":"51123456789","message":"Hello from WhatsApp n8n Server"}'
 ```
 
-Replies to a specific WhatsApp message.
-
-Request Body
-
-```json
-{
-    "chatId": "51123456789",
-    "messageId": "MESSAGE_ID",
-    "message": "This is a reply message from Whatsapp n8n Server"
-}
-```
-
-Response
-
-```json
-{
-    "status": "OK",
-    "message": "Reply sent successfully",
-    "data": {
-        "chatId": "51123456789",
-        "messageId": "MESSAGE_ID",
-        "message": "This is a reply to your message"
-    }
-}
-```
-
-### Broadcast Message
+### Reply to a message
 
 ```bash
-POST /api/v1/broadcast-message
-x-api-key: your-api-key
-Content-Type: application/json
+curl -X POST http://localhost:3000/api/v1/reply-message \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: your-api-key' \
+  -d '{"chatId":"51123456789","messageId":"MESSAGE_ID","message":"Reply message"}'
 ```
 
-Sends the same WhatsApp message to multiple phone numbers with anti-ban protection.
-
-Request Body
-
-```json
-{
-    "chatIds": ["51123456789", "51987654321", "51555666777"],
-    "message": "Hello everyone from WhatsApp n8n Server."
-}
-```
-
-Response
-
-```json
-    {
-        "status": "OK",
-        "message": "Broadcast message sent successfully",
-        "data": {
-            "chatIds": ["51123456789", "51987654321", "51555666777"],
-            "message": "Hello everyone from WhatsApp n8n Server."
-        }
-    }
-```
-
-> [!IMPORTANT]
-> Anti-Ban Protection: Each broadcast message has a configurable delay (BROADCAST_DELAY_MS). Sending too quickly may result in account restrictions.
-
-## 🔗 Quick Integration with n8n
-
-Here’s how to quickly send a WhatsApp message from n8n using this API:
-
-1. In your n8n workflow, add an HTTP Request node.
-2. Configure it as follows:
-
-Method: POST
-
-URL: http://your-server.com/api/v1/send-message
-
-Headers:
+### Broadcast a message
 
 ```bash
-x-api-key: your-api-key
-Content-Type: application/json
+curl -X POST http://localhost:3000/api/v1/broadcast-message \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: your-api-key' \
+  -d '{"chatIds":["51123456789","51987654321"],"message":"Hello everyone"}'
 ```
 
-Body (JSON):
+## Documentation
 
-```json
-{
-    "chatId": "51123456789",
-    "message": "Hello from WhatsApp n8n Server."
-}
-```
+- OpenAPI spec: `GET /api/v1/openapi.json`
+- Scalar UI: `GET /api/v1/docs`
 
-3. Connect the node to your workflow and execute.
+## Deployment
 
->[!TIP]
->You can use dynamic data from previous nodes in chatId or message to send personalized messages in your workflows.
+Use Docker for a repeatable VPS deployment. See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full procedure.
 
-## 🧑‍💻 Author
+## Notes
 
-Developed by [Nicolas Del Rosario](https://github.com/nicolasdelrosario)
-
-## 📜 License
-
-MIT
+- Keep the API key private and use HTTPS in production.
+- Broadcast requests use a configurable delay to avoid aggressive sending.
+- The WhatsApp session lives in `.wwebjs_auth`, so persist that directory if you run outside Docker.
