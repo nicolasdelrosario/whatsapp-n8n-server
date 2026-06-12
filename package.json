@@ -9,19 +9,19 @@
     "check": "bunx biome check src"
   },
   "dependencies": {
-    "@hono/node-server": "1.19.9",
-    "dotenv": "17.3.1",
-    "dotenv-expand": "12.0.3",
-    "hono": "4.12.0",
+    "@hono/node-server": "^2.0.4",
+    "dotenv": "^17.4.2",
+    "dotenv-expand": "^13.0.0",
+    "hono": "^4.12.25",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "1.34.6",
-    "zod": "4.3.6"
+    "whatsapp-web.js": "^1.34.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.4",
-    "@types/node": "25.3.0",
+    "@biomejs/biome": "^2.5.0",
+    "@types/node": "^25.9.3",
     "@types/qrcode-terminal": "^0.12.2",
-    "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
   }
 }
