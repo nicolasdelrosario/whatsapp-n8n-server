@@ -26,5 +26,20 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "description": "REST API for automating WhatsApp messaging with n8n, Hono, OpenAPI and Scalar.",
+  "keywords": [
+    "whatsapp",
+    "n8n",
+    "hono",
+    "nodejs",
+    "docker",
+    "openapi",
+    "scalar",
+    "clean-architecture",
+    "automation",
+    "api",
+    "whatsapp-web.js",
+    "webhook"
+  ]
 }
