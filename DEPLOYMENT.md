@@ -6,7 +6,7 @@ Deploy this project with Docker on a VPS. The server needs a stable runtime, per
 
 ## Build artifacts
 
-- Application image: Node.js runtime with the project installed
+- Application image: Node.js 22 LTS runtime with the project installed
 - Persistent volume: stores `.wwebjs_auth` so the WhatsApp session survives container restarts
 - Optional reverse proxy: Nginx, Caddy or Traefik
 

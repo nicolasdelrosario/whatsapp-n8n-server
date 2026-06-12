@@ -24,7 +24,7 @@ The entry point is `src/app.ts`, which builds the Hono app, registers routes and
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22 LTS or newer
 - Docker and Docker Compose for containerized deployment
 - A WhatsApp account on a phone with WhatsApp installed
 - A valid `x-api-key` for protected requests
@@ -34,7 +34,7 @@ The entry point is `src/app.ts`, which builds the Hono app, registers routes and
 1. Install dependencies.
 
 ```bash
-bun install
+npm install
 ```
 
 2. Create your environment file.
@@ -55,7 +55,7 @@ BROADCAST_DELAY_MS=1500
 4. Start the server.
 
 ```bash
-bun dev
+npm run dev
 ```
 
 On the first run, the terminal prints a QR code. Scan it with WhatsApp to authorize the session. The browser session is persisted through `LocalAuth`.

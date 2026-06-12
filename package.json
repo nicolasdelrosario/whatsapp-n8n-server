@@ -4,9 +4,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "format": "bunx biome format --write src",
-    "lint": "bunx biome lint --write src",
-    "check": "bunx biome check src"
+    "format": "biome format --write src",
+    "lint": "biome lint --write src",
+    "check": "biome check src"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.4",
@@ -23,5 +23,8 @@
     "@types/qrcode-terminal": "^0.12.2",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
