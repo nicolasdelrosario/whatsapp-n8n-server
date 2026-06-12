@@ -1,3 +1,4 @@
+import { RecipientNotFoundError } from "@/lib/Whatsapp/domain/exceptions/RecipientNotFoundError";
 import type { BroadcastMessage } from "@/lib/Whatsapp/domain/model/BroadcastMessage";
 import type { Message } from "@/lib/Whatsapp/domain/model/Message";
 import type { ReplyMessage } from "@/lib/Whatsapp/domain/model/ReplyMessage";
@@ -11,10 +12,11 @@ export class WhatsappService implements WhatsappRepository {
   private async getReadyClient() {
     const client = await getWhatsAppClient();
 
-    if (!client)
+    if (!client) {
       throw new WhatsappClientIsNotReadyError(
         "Client not ready or disconnected",
       );
+    }
 
     return client;
   }
@@ -22,7 +24,9 @@ export class WhatsappService implements WhatsappRepository {
   async sendMessage(message: Message): Promise<void> {
     const { chatId, message: text } = message.toPrimitives();
 
-    if (!chatId || !text) throw new Error("chatId and message are required");
+    if (!chatId || !text) {
+      throw new Error("chatId and message are required");
+    }
 
     const client = await this.getReadyClient();
     await client.sendMessage(`${chatId}${WHATSAPP_SUFFIX}`, text);
@@ -31,16 +35,21 @@ export class WhatsappService implements WhatsappRepository {
   async replyMessage(replyMessage: ReplyMessage): Promise<void> {
     const { chatId, messageId, message } = replyMessage.toPrimitives();
 
-    if (!chatId || !message) throw new Error("chatId and message are required");
+    if (!chatId || !message) {
+      throw new Error("chatId and message are required");
+    }
 
     const client = await this.getReadyClient();
 
     if (messageId) {
       const targetMessage = await client.getMessageById(messageId);
-      if (targetMessage) {
-        await targetMessage.reply(message);
-        return;
+
+      if (!targetMessage) {
+        throw new RecipientNotFoundError("Target message not found");
       }
+
+      await targetMessage.reply(message);
+      return;
     }
 
     await client.sendMessage(`${chatId}${WHATSAPP_SUFFIX}`, message);
@@ -52,8 +61,9 @@ export class WhatsappService implements WhatsappRepository {
   ): Promise<void> {
     const { chatIds, message } = broadcastMessage.toPrimitives();
 
-    if (!chatIds || !message)
+    if (!chatIds || !message) {
       throw new Error("chatIds and message are required");
+    }
 
     const client = await this.getReadyClient();
 

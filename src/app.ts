@@ -14,11 +14,12 @@ initializeClient();
 serve(
   {
     fetch: app.fetch,
-    port: Number(env?.PORT),
+    port: env.PORT,
   },
-  (_info) => {
-    env?.NODE_ENV === "development" &&
-      console.log(`Server is running on http://localhost:${_info.port}`);
+  (info) => {
+    if (env.NODE_ENV === "development") {
+      console.log(`Server is running on http://localhost:${info.port}`);
+    }
   },
 );
 

@@ -11,6 +11,7 @@ import { EmptyMessageContentError } from "@/lib/Whatsapp/domain/exceptions/Empty
 import { InvalidMessageDataError } from "@/lib/Whatsapp/domain/exceptions/InvalidMessageDataError";
 import { InvalidPhoneNumberError } from "@/lib/Whatsapp/domain/exceptions/InvalidPhoneNumberError";
 import { RecipientNotFoundError } from "@/lib/Whatsapp/domain/exceptions/RecipientNotFoundError";
+import { replyMessageSchema } from "@/lib/Whatsapp/infrastructure/schemas/whatsappSchemas";
 
 export class ReplyMessageController implements Controller {
   async run(
@@ -18,19 +19,19 @@ export class ReplyMessageController implements Controller {
   ): Promise<Response & TypedResponse<ControllerResponse, StatusCode, "json">> {
     try {
       const services = c.get("services") as ServicesContainer;
-      const { chatId, messageId, message } = await c.req.json();
+      const payload = replyMessageSchema.parse(await c.req.json());
 
-      await services.whatsapp.replyMessage.run(chatId, messageId, message);
+      await services.whatsapp.replyMessage.run(
+        payload.chatId,
+        payload.messageId,
+        payload.message,
+      );
 
       return c.json(
         {
           status: HttpStatusPhrases.OK,
           message: "Message replied successfully",
-          data: {
-            chatId,
-            messageId,
-            message,
-          },
+          data: payload,
         },
         HttpStatusCodes.OK,
       );
@@ -50,6 +51,13 @@ export class ReplyMessageController implements Controller {
         return c.json(
           { status: HttpStatusPhrases.NOT_FOUND, message: error.message },
           HttpStatusCodes.NOT_FOUND,
+        );
+      }
+
+      if (error instanceof Error && error.name === "ZodError") {
+        return c.json(
+          { status: HttpStatusPhrases.BAD_REQUEST, message: error.message },
+          HttpStatusCodes.BAD_REQUEST,
         );
       }
 

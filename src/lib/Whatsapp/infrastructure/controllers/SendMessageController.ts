@@ -11,6 +11,7 @@ import { EmptyMessageContentError } from "@/lib/Whatsapp/domain/exceptions/Empty
 import { InvalidMessageDataError } from "@/lib/Whatsapp/domain/exceptions/InvalidMessageDataError";
 import { InvalidPhoneNumberError } from "@/lib/Whatsapp/domain/exceptions/InvalidPhoneNumberError";
 import { RecipientNotFoundError } from "@/lib/Whatsapp/domain/exceptions/RecipientNotFoundError";
+import { sendMessageSchema } from "@/lib/Whatsapp/infrastructure/schemas/whatsappSchemas";
 
 export class SendMessageController implements Controller {
   async run(
@@ -18,18 +19,15 @@ export class SendMessageController implements Controller {
   ): Promise<Response & TypedResponse<ControllerResponse, StatusCode, "json">> {
     try {
       const services = c.get("services") as ServicesContainer;
-      const { chatId, message } = await c.req.json();
+      const payload = sendMessageSchema.parse(await c.req.json());
 
-      await services.whatsapp.sendMessage.run(chatId, message);
+      await services.whatsapp.sendMessage.run(payload.chatId, payload.message);
 
       return c.json(
         {
           status: HttpStatusPhrases.OK,
           message: "Message sent successfully",
-          data: {
-            chatId,
-            message,
-          },
+          data: payload,
         },
         HttpStatusCodes.OK,
       );
@@ -38,17 +36,26 @@ export class SendMessageController implements Controller {
         error instanceof InvalidPhoneNumberError ||
         error instanceof InvalidMessageDataError ||
         error instanceof EmptyMessageContentError
-      )
+      ) {
         return c.json(
           { status: HttpStatusPhrases.BAD_REQUEST, message: error.message },
           HttpStatusCodes.BAD_REQUEST,
         );
+      }
 
-      if (error instanceof RecipientNotFoundError)
+      if (error instanceof RecipientNotFoundError) {
         return c.json(
           { status: HttpStatusPhrases.NOT_FOUND, message: error.message },
           HttpStatusCodes.NOT_FOUND,
         );
+      }
+
+      if (error instanceof Error && error.name === "ZodError") {
+        return c.json(
+          { status: HttpStatusPhrases.BAD_REQUEST, message: error.message },
+          HttpStatusCodes.BAD_REQUEST,
+        );
+      }
 
       throw error;
     }

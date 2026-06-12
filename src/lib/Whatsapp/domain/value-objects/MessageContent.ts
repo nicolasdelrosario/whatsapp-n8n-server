@@ -3,11 +3,12 @@ export class MessageContent {
 
   constructor(value: string) {
     this.validateContent(value);
-    this.value = value;
+    this.value = value.trim();
   }
 
   private validateContent(value: string) {
-    if (value.length < 1)
+    if (value.trim().length < 1) {
       throw new Error("Message must be at least 1 characters long");
+    }
   }
 }

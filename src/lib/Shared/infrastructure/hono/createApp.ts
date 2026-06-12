@@ -12,13 +12,12 @@ export const createRouter = () => {
 export const createApp = () => {
   const app = createRouter();
 
-  app.notFound(notFound);
-  app.onError(onError);
-
+  app.use(logger());
   app.use("*", servicesMiddleware);
   app.use("*", authMiddleware);
 
-  app.use(logger());
+  app.notFound(notFound);
+  app.onError(onError);
 
   return app;
 };
