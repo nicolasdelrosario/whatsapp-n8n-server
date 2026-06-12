@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whatsapp-n8n-server
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      API_KEY: ${API_KEY:-replace-with-a-long-random-secret}
+      BROADCAST_DELAY_MS: 1500
+    ports:
+      - "3000:3000"
+    volumes:
+      - whatsapp-session:/app/.wwebjs_auth
+    restart: unless-stopped
+
+volumes:
+  whatsapp-session:
