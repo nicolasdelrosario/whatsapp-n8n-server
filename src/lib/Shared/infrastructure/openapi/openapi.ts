@@ -343,14 +343,22 @@ export const renderScalarHtml = () => `<!doctype html>
           linear-gradient(180deg, #0b1020 0%, #111827 100%);
       }
 
-      scalar-api-reference {
-        height: 100vh;
-        width: 100vw;
+      #app {
+        min-height: 100vh;
       }
     </style>
   </head>
   <body>
-    <scalar-api-reference data-url="${specUrl}" search-hotkey="k" theme="blue"></scalar-api-reference>
+    <div id="app"></div>
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+    <script>
+      if (!window.Scalar?.createApiReference) {
+        document.getElementById('app').innerHTML = '<p style="color:white;padding:24px;font-family:monospace">Scalar failed to load.</p>';
+      } else {
+        window.Scalar.createApiReference('#app', {
+          url: '${specUrl}',
+        });
+      }
+    </script>
   </body>
 </html>`;
