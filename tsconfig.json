@@ -24,5 +24,8 @@
     "moduleDetection": "force",
     "noUncheckedIndexedAccess": true,
     "ignoreDeprecations": "6.0"
-  }
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
 }
