@@ -1,3 +1,5 @@
+import { EmptyMessageContentError } from "@/lib/Whatsapp/domain/exceptions/EmptyMessageContentError";
+
 export class MessageContent {
   public readonly value: string;
 
@@ -8,7 +10,9 @@ export class MessageContent {
 
   private validateContent(value: string) {
     if (value.trim().length < 1) {
-      throw new Error("Message must be at least 1 characters long");
+      throw new EmptyMessageContentError(
+        "Message must be at least 1 characters long",
+      );
     }
   }
 }

@@ -1,3 +1,5 @@
+import { InvalidPhoneNumberError } from "@/lib/Whatsapp/domain/exceptions/InvalidPhoneNumberError";
+
 export class ChatId {
   public readonly value: string;
 
@@ -10,7 +12,7 @@ export class ChatId {
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
 
     if (!phoneRegex.test(chatId.trim())) {
-      throw new Error("ChatId must be valid");
+      throw new InvalidPhoneNumberError("ChatId must be valid");
     }
   }
 }
