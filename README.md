@@ -6,6 +6,7 @@ WhatsApp n8n Server exposes a small REST API for sending, replying and broadcast
 
 - REST API with API key protection
 - QR code bootstrap flow for WhatsApp Web authentication
+- Optional PostgreSQL-backed WhatsApp session persistence
 - Send, reply and broadcast message use cases
 - Health check endpoint for deployments
 - OpenAPI 3.1 document and Scalar docs UI
@@ -50,6 +51,7 @@ PORT=3000
 NODE_ENV=development
 API_KEY=your-api-key
 BROADCAST_DELAY_MS=1500
+POSTGRES_URL=
 ```
 
 4. Start the server.
@@ -58,7 +60,22 @@ BROADCAST_DELAY_MS=1500
 npm run dev
 ```
 
-On the first run, the terminal prints a QR code. Scan it with WhatsApp to authorize the session. The browser session is persisted through `LocalAuth`.
+On the first run, the terminal prints a QR code. Scan it with WhatsApp to authorize the session. By default, the browser session is persisted through `LocalAuth` in `.wwebjs_auth`.
+
+## Session persistence
+
+The server supports two WhatsApp session storage modes:
+
+- Local filesystem: default behavior when `POSTGRES_URL` is empty. Persist `.wwebjs_auth` across restarts.
+- PostgreSQL: enabled automatically when `POSTGRES_URL` is set. The server uses `RemoteAuth` and stores the WhatsApp session archive in a `wwebjs_sessions` table created on startup.
+
+Example:
+
+```env
+POSTGRES_URL=postgresql://user:password@host:5432/database
+```
+
+Use a standard PostgreSQL connection URL from your provider. Managed providers such as Neon, Supabase, Railway or Aiven usually include SSL requirements in the connection string.
 
 ## API surface
 
@@ -129,4 +146,5 @@ Use Docker for a repeatable VPS deployment. See [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 - Keep the API key private and use HTTPS in production.
 - Broadcast requests use a configurable delay to avoid aggressive sending.
-- The WhatsApp session lives in `.wwebjs_auth`, so persist that directory if you run outside Docker.
+- Without `POSTGRES_URL`, the WhatsApp session lives in `.wwebjs_auth`, so persist that directory if you run outside Docker.
+- With `POSTGRES_URL`, the database becomes the source of truth for session persistence; `.wwebjs_auth` is still used by `whatsapp-web.js` as local working storage.

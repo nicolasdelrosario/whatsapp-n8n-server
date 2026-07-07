@@ -9,6 +9,7 @@ services:
       NODE_ENV: production
       API_KEY: ${API_KEY:-replace-with-a-long-random-secret}
       BROADCAST_DELAY_MS: 1500
+      POSTGRES_URL: ${POSTGRES_URL:-}
     ports:
       - "3000:3000"
     volumes:
