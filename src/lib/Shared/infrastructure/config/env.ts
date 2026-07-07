@@ -19,6 +19,10 @@ const ZodEnvSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   API_KEY: z.string().min(1),
   BROADCAST_DELAY_MS: z.coerce.number().int().nonnegative().default(1500),
+  POSTGRES_URL: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().url().optional(),
+  ),
 });
 
 const parsedEnv = ZodEnvSchema.safeParse(process.env);
