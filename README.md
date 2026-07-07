@@ -7,6 +7,7 @@ WhatsApp n8n Server exposes a small REST API for sending, replying and broadcast
 - REST API with API key protection
 - QR code bootstrap flow for WhatsApp Web authentication
 - Optional PostgreSQL-backed WhatsApp session persistence
+- WhatsApp connection status endpoint for operational checks
 - Send, reply and broadcast message use cases
 - Health check endpoint for deployments
 - OpenAPI 3.1 document and Scalar docs UI
@@ -100,6 +101,7 @@ x-api-key: your-api-key
 Endpoints:
 
 - `GET /api/v1/qr-code`
+- `GET /api/v1/status`
 - `POST /api/v1/send-message`
 - `POST /api/v1/reply-message`
 - `POST /api/v1/broadcast-message`
@@ -142,9 +144,22 @@ curl -X POST http://localhost:3000/api/v1/broadcast-message \
 
 Use Docker for a repeatable VPS deployment. See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full procedure.
 
+Before deploying, run the local checks:
+
+```bash
+npm run verify
+```
+
+To validate the Docker image and health endpoint:
+
+```bash
+npm run smoke:docker
+```
+
 ## Notes
 
 - Keep the API key private and use HTTPS in production.
 - Broadcast requests use a configurable delay to avoid aggressive sending.
+- Docker uses the system Chromium package and configures Puppeteer through `PUPPETEER_EXECUTABLE_PATH`.
 - Without `POSTGRES_URL`, the WhatsApp session lives in `.wwebjs_auth`, so persist that directory if you run outside Docker.
 - With `POSTGRES_URL`, the database becomes the source of truth for session persistence; `.wwebjs_auth` is still used by `whatsapp-web.js` as local working storage.

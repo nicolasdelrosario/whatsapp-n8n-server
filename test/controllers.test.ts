@@ -4,6 +4,7 @@ import { BroadcastMessageController } from "../src/lib/Whatsapp/infrastructure/c
 import { QRCodeController } from "../src/lib/Whatsapp/infrastructure/controllers/QRCodeController";
 import { ReplyMessageController } from "../src/lib/Whatsapp/infrastructure/controllers/ReplyMessageController";
 import { SendMessageController } from "../src/lib/Whatsapp/infrastructure/controllers/SendMessageController";
+import { WhatsappStatusController } from "../src/lib/Whatsapp/infrastructure/controllers/WhatsappStatusController";
 import { EmptyMessageContentError } from "../src/lib/Whatsapp/domain/exceptions/EmptyMessageContentError";
 import { InvalidMessageDataError } from "../src/lib/Whatsapp/domain/exceptions/InvalidMessageDataError";
 import { InvalidPhoneNumberError } from "../src/lib/Whatsapp/domain/exceptions/InvalidPhoneNumberError";
@@ -471,6 +472,22 @@ test("QRCodeController returns 202 when the QR code is not available yet", async
     message: "QR code not available yet. Please try again.",
     status: "disconnected",
   });
+});
+
+test("WhatsappStatusController returns the current connection status", async () => {
+  const controller = new WhatsappStatusController();
+  const context = createContext({
+    body: {},
+    services: {} as ServicesContainer,
+  });
+
+  const response = await controller.run(context);
+  const body = await readJsonResponse(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(body.status, "disconnected");
+  assert.equal(body.service, "whatsapp");
+  assert.equal(typeof body.timestamp, "string");
 });
 
 // QRCodeController additional states (ready, qr available, error) require

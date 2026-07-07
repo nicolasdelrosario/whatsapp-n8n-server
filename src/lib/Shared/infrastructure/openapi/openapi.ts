@@ -76,6 +76,28 @@ export const openApiDocument = {
         },
       },
     },
+    "/status": {
+      get: {
+        tags: ["WhatsApp"],
+        summary: "Get the current WhatsApp connection status.",
+        security: [{ apiKeyAuth: [] }],
+        responses: {
+          200: {
+            description: "Current WhatsApp connection status.",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/WhatsappStatusResponse",
+                },
+              },
+            },
+          },
+          401: {
+            description: "Missing or invalid API key.",
+          },
+        },
+      },
+    },
     "/send-message": {
       post: {
         tags: ["WhatsApp"],
@@ -228,6 +250,24 @@ export const openApiDocument = {
             ],
           },
           qrCode: { type: "string" },
+        },
+      },
+      WhatsappStatusResponse: {
+        type: "object",
+        required: ["status", "service", "timestamp"],
+        properties: {
+          status: {
+            type: "string",
+            enum: [
+              "initializing",
+              "qr",
+              "authenticating",
+              "ready",
+              "disconnected",
+            ],
+          },
+          service: { type: "string", example: "whatsapp" },
+          timestamp: { type: "string", format: "date-time" },
         },
       },
       SendMessageRequest: {

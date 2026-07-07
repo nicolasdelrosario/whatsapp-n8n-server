@@ -7,7 +7,9 @@
     "format": "biome format --write src",
     "lint": "biome lint --write src",
     "check": "biome check src",
-    "test": "NODE_ENV=test API_KEY=test node --import tsx --test test/domain.test.ts test/use-cases.test.ts test/controllers.test.ts test/postgres-session-store.test.ts"
+    "test": "NODE_ENV=test API_KEY=test node --import tsx --test test/domain.test.ts test/use-cases.test.ts test/controllers.test.ts test/postgres-session-store.test.ts",
+    "verify": "npm test && npm run check && tsc --noEmit",
+    "smoke:docker": "sh scripts/smoke-docker.sh"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.4",
